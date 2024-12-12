@@ -243,7 +243,7 @@ function InfoPoint({ position, info, imageUrl }) {
 
 
 function ImagePlane({position, machineID}) {
-  const texture = useTexture('/images/machine.jpg')
+  const texture = useTexture('images/machine.jpg')
   
   return (
     <mesh 
@@ -284,13 +284,14 @@ function App() {
         { name: "right", keys: ["ArrowRight", "d", "D"] },
         { name: "jump", keys: ["Space"] },
       ]}>
-      <Canvas style={{ height: '100vh', width: '100vw' }} camera={{ fov: 75, position: [100, 10, -8], near: 0.0001, far: 1000 }}  shadows={true}
+      <Canvas style={{ height: '100vh', width: '100vw' }} camera={{ fov: 75, position: [100, 10, -8], near: 0.0001, far: 1000 }}
         //shadows={false} // 10. Disable shadows for performance
         gl={{ 
           powerPreference: "high-performance",
           antialias: true, 
           // stencil: false,
           // depth: true,
+          logarithmicDepthBuffer: true
         }}
         // performance={{ min: 0.5 }}
       >
