@@ -10,7 +10,7 @@ function LiveDataDisplay({ machineID, distanceFactor = 8, position}) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://xxx.xx.x.xx:xxxx/api/GetMachineDetails?machineID=' + machineID);
+        const response = await fetch('http://xxx.xx.0.64:8016/api/GetMachineDetails?machineID=' + machineID);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
