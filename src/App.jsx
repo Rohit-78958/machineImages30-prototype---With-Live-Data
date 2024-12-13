@@ -241,25 +241,6 @@ function InfoPoint({ position, info, imageUrl }) {
   )
 }
 
-function useFrustumCulling(position, range = 20) {
-  const { camera } = useThree();
-  const [isVisible, setIsVisible] = useState(false);
-
-  useFrame(() => {
-    const cameraPosition = camera.position;
-    const distance = new THREE.Vector3(...position).distanceTo(cameraPosition);
-
-    if (distance <= range) {
-      setIsVisible(true);
-    } else {
-      setIsVisible(false);
-    }
-  });
-
-  return isVisible;
-}
-
-
 function ImagePlane({ position, machineID }) {
   const texture = useTexture('images/pngegg.png');
   const planeRef = useRef();
