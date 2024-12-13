@@ -1,6 +1,6 @@
 import { Canvas, useThree } from '@react-three/fiber'
 import React, { useRef, useState, useEffect ,Suspense, useCallback } from 'react'
-import { OrbitControls, Stats, Environment, useGLTF, Html, useProgress, KeyboardControls, useKeyboardControls, useAnimations, PerformanceMonitor, ContactShadows, useTexture } from '@react-three/drei'
+import { OrbitControls, Stats, Environment, useGLTF, Html, useProgress, KeyboardControls, useKeyboardControls, PerspectiveCamera, useAnimations, PerformanceMonitor, ContactShadows, useTexture } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Perf } from 'r3f-perf'
@@ -21,6 +21,93 @@ function Loader() {
   </div>
 </Html>
 }
+
+function CameraLookAround() {
+  const { camera } = useThree();
+  const [isDragging, setIsDragging] = useState(false); // Whether the mouse is being dragged
+  const [prevMousePos, setPrevMousePos] = useState({ x: 0, y: 0 }); // Track previous mouse position
+  const rotationSpeed = 0.002; // Control rotation sensitivity
+
+  // Track mouse down, move, and up events for dragging
+  useEffect(() => {
+    const handleMouseDown = (event) => {
+      setIsDragging(true);
+      setPrevMousePos({ x: event.clientX, y: event.clientY });
+    };
+
+    const handleMouseMove = (event) => {
+      if (isDragging) {
+        const deltaX = event.clientX - prevMousePos.x;
+        const deltaY = event.clientY - prevMousePos.y;
+
+        // Update camera rotation based on mouse movement
+        camera.rotation.y -= deltaX * rotationSpeed; // Horizontal (left/right) rotation
+
+        // Clamp vertical rotation to avoid flipping
+        camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+
+        setPrevMousePos({ x: event.clientX, y: event.clientY });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    // Attach event listeners for mouse interactions
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    // Cleanup on component unmount
+    return () => {
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, prevMousePos, camera]);
+
+  // useEffect(() => {
+  //   const handleTouchStart = (event) => {
+  //     setIsDragging(true);
+  //     const touch = event.touches[0];
+  //     setPrevMousePos({ x: touch.clientX, y: touch.clientY });
+  //   };
+  
+  //   const handleTouchMove = (event) => {
+  //     if (isDragging) {
+  //       const touch = event.touches[0];
+  //       const deltaX = touch.clientX - prevMousePos.x;
+  //       const deltaY = touch.clientY - prevMousePos.y;
+  
+  //       // Update camera rotation based on touch movement
+  //       camera.rotation.y -= deltaX * rotationSpeed; // Horizontal (left/right) rotation
+  
+  //       camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+  
+  //       setPrevMousePos({ x: touch.clientX, y: touch.clientY });
+  //     }
+  //   };
+  
+  //   const handleTouchEnd = () => {
+  //     setIsDragging(false);
+  //   };
+  
+  //   window.addEventListener('touchstart', handleTouchStart);
+  //   window.addEventListener('touchmove', handleTouchMove);
+  //   window.addEventListener('touchend', handleTouchEnd);
+  
+  //   return () => {
+  //     window.removeEventListener('touchstart', handleTouchStart);
+  //     window.removeEventListener('touchmove', handleTouchMove);
+  //     window.removeEventListener('touchend', handleTouchEnd);
+  //   };
+  // }, [isDragging, prevMousePos, camera]);
+  
+
+  return null;
+}
+
 
 function CameraController({ showroomBoundary }) {
   const [, get] = useKeyboardControls();
@@ -52,7 +139,6 @@ function CameraController({ showroomBoundary }) {
 function ShowroomModel({ setBoundary }) {
   const { scene } = useGLTF("models/showroom.glb");
   const showroom = useRef();
-  const [boundary, setBoundaryState] = useState(null);
 
   useEffect(() => {
     if (showroom.current) {
@@ -282,12 +368,12 @@ function ImagePlane({ position, machineID }) {
     setIsLiveDataVisible((prev) => !prev); // Toggle visibility
   };
 
-  // useFrame(({ camera }) => {
-  //   if (planeRef.current) {
-  //     // Make the plane face the camera
-  //     planeRef.current.lookAt(camera.position);
-  //   }
-  // });
+  useFrame(({ camera }) => {
+    if (planeRef.current) {
+      // Make the plane face the camera
+      planeRef.current.lookAt(camera.position);
+    }
+  });
 
   return (
     <mesh ref={planeRef} position={position} rotation={[0, Math.PI / 2, 0]}
@@ -329,7 +415,8 @@ function App() {
         { name: "right", keys: ["ArrowRight", "d", "D"] },
         { name: "jump", keys: ["Space"] },
       ]}>
-      <Canvas style={{ height: '100vh', width: '100vw' }} camera={{ fov: 75, position: [100, 10, -8], near: 0.0001, far: 1000 }}
+      <Canvas style={{ height: '100vh', width: '100vw' }} 
+      //camera={{ fov: 75, position: [100, 10, -8], near: 0.0001, far: 1000 }}
         //shadows={false} // 10. Disable shadows for performance
         gl={{ 
           powerPreference: "high-performance",
@@ -341,10 +428,11 @@ function App() {
         }}
         //performance={{ min: 0.5 }}
       >
-      
-        {/* <GlobalCanvas scaleMultiplier={0.01} /> */}
+      <PerspectiveCamera makeDefault fov={75} position={[100, 10, -8]} />
+      {/* <GlobalCanvas scaleMultiplier={0.01} /> */}
         {/* <PerformanceOptimizer /> */}
         <Perf position="top-left" />
+        <CameraLookAround />
         {/* <CameraController showroomBoundary={showroomBoundary} /> */}
         {/* <CameraControllerDpad mobileControls={mobileControls} /> */}
         <directionalLight position={[1, 10, 1]}/>
