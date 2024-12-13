@@ -241,29 +241,71 @@ function InfoPoint({ position, info, imageUrl }) {
   )
 }
 
+function useFrustumCulling(position, range = 20) {
+  const { camera } = useThree();
+  const [isVisible, setIsVisible] = useState(false);
 
-function ImagePlane({position, machineID}) {
-  const texture = useTexture('images/machine.jpg')
+  useFrame(() => {
+    const cameraPosition = camera.position;
+    const distance = new THREE.Vector3(...position).distanceTo(cameraPosition);
+
+    if (distance <= range) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  });
+
+  return isVisible;
+}
+
+
+function ImagePlane({ position, machineID }) {
+  const texture = useTexture('images/pngegg.png');
+  const planeRef = useRef();
+  //const [isLiveDataVisible, setIsLiveDataVisible] = useState(false);
   
+  const { camera } = useThree();
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Function to check distance to the camera
+  const checkVisibility = useCallback(() => {
+    if (planeRef.current) {
+      const distance = camera.position.distanceTo(planeRef.current.position);
+      setIsVisible(distance < 20); // Adjust threshold as needed
+    }
+  }, [camera]);
+
+  // Update visibility on every frame
+  useFrame(() => {
+    checkVisibility();
+  });
+
+  const handleMeshClick = (e) => {
+    e.stopPropagation();
+    setIsLiveDataVisible((prev) => !prev); // Toggle visibility
+  };
+
+  // useFrame(({ camera }) => {
+  //   if (planeRef.current) {
+  //     // Make the plane face the camera
+  //     planeRef.current.lookAt(camera.position);
+  //   }
+  // });
+
   return (
-    <mesh 
-      position={position} 
-      rotation={[0, Math.PI/2, 0]}
+    <mesh ref={planeRef} position={position} rotation={[0, Math.PI / 2, 0]}
+      // onClick={handleMeshClick}
     >
       <planeGeometry args={[15, 10]} />
       <meshBasicMaterial map={texture}
-        //transparent={true} 
-        // opacity={0.2} // Adjust the opacity value (0 to 1)
-        // color="white" // Ensures the texture's colors are not altered
-        // alphaTest={0.9} // Discard fully transparent parts (useful for JPEGs)
-      />
-      {/* <Html position={[5, 4.5, 0.1]}>
-        <h1 className='text-2xl font-bold'>Rohit</h1>
-      </Html> */}
-      <LiveDataDisplay machineID={machineID} position={[3, 4.5, 0.1]} />
+      transparent />
+      {/* {isLiveDataVisible && <LiveDataDisplay machineID={machineID} position={[3, 4.5, 0.1]} />} */}
+      {isVisible && <LiveDataDisplay machineID={machineID} position={[3, 4.5, 0.1]} />}
     </mesh>
-  )
+  );
 }
+
 
 function App() {
   const [mobileControls, setMobileControls] = useState({
@@ -291,9 +333,10 @@ function App() {
           antialias: true, 
           // stencil: false,
           // depth: true,
-          logarithmicDepthBuffer: true
+          logarithmicDepthBuffer: true,
+          
         }}
-        // performance={{ min: 0.5 }}
+        //performance={{ min: 0.5 }}
       >
       
         {/* <GlobalCanvas scaleMultiplier={0.01} /> */}

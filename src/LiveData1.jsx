@@ -14,7 +14,7 @@ function LiveDataDisplay({ machineID, position }) {
       try {
         console.log('Fetching data for machineID:', machineID);
         const response = await fetch(
-          'http://xxx.xx.0.64:8016/api/GetMachineDetails?machineID=' + machineID
+          'http://172.36.0.64:8016/api/GetMachineDetails?machineID=' + machineID
         );
         if (!response.ok) {
           throw new Error('Network response was not ok');
