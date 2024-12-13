@@ -62,7 +62,7 @@ function ShowroomModel({ setBoundary }) {
 
       const boundaryData = {
         minX: min.x + 20,
-        maxX: max.x - 180,
+        maxX: max.x - 160,
         minZ: min.z + 10,
         maxZ: max.z - 10,
       };
@@ -79,7 +79,7 @@ function ShowroomModel({ setBoundary }) {
 }
 
 // Camera controller component - inside Canvas
-function CameraControllerDpad({ mobileControls, setBoundary }) {
+function CameraControllerDpad({ mobileControls, showroomBoundary }) {
   const [, get] = useKeyboardControls();
 
   useFrame((state) => {
