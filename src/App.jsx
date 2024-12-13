@@ -22,39 +22,64 @@ function Loader() {
 </Html>
 }
 
-function CameraController() {
-  const [, get] = useKeyboardControls()
+function CameraController({ showroomBoundary }) {
+  const [, get] = useKeyboardControls();
 
   useFrame((state) => {
-    const { forward, backward, left, right } = get()
+    const { forward, backward, left, right } = get();
 
-    // Get mouse position in normalized device coordinates (-1 to +1)
-    // const mouseX = (state.mouse.x * Math.PI)   // Convert to radians
-    // const mouseY = (state.mouse.y * Math.PI) / 8  // Limit vertical rotation
-
-    // // Set camera rotation
-    // state.camera.rotation.y = mouseX
-    // state.camera.rotation.x = mouseY
-    
     // Calculate movement direction
-    frontVector.set(0, 0, backward - forward)
-    sideVector.set(left - right, 0, 0)
+    frontVector.set(0, 0, backward - forward);
+    sideVector.set(left - right, 0, 0);
     direction
       .subVectors(frontVector, sideVector)
       .normalize()
       .multiplyScalar(SPEED)
-      .applyEuler(state.camera.rotation)
+      .applyEuler(state.camera.rotation);
 
     // Update camera position
-    state.camera.position.x += direction.x * 0.1
-    state.camera.position.z += direction.z * 0.1
-  })
+    state.camera.position.x += direction.x * 0.1;
+    state.camera.position.z += direction.z * 0.1;
 
-  return null
+    // Clamp the camera's position within the showroom boundary
+    state.camera.position.x = THREE.MathUtils.clamp(state.camera.position.x, showroomBoundary.minX, showroomBoundary.maxX);
+    state.camera.position.z = THREE.MathUtils.clamp(state.camera.position.z, showroomBoundary.minZ, showroomBoundary.maxZ);
+  });
+
+  return null;
+}
+
+function ShowroomModel({ setBoundary }) {
+  const { scene } = useGLTF("models/showroom.glb");
+  const showroom = useRef();
+  const [boundary, setBoundaryState] = useState(null);
+
+  useEffect(() => {
+    if (showroom.current) {
+      const boundingBox = new THREE.Box3().setFromObject(showroom.current);
+      const min = boundingBox.min;
+      const max = boundingBox.max;
+
+      const boundaryData = {
+        minX: min.x + 20,
+        maxX: max.x - 180,
+        minZ: min.z + 10,
+        maxZ: max.z - 10,
+      };
+
+      setBoundary(boundaryData); // Pass boundary data to App component
+    }
+  }, [scene, setBoundary]);
+
+  return (
+    <group ref={showroom}>
+      <primitive object={scene} scale={0.2} castShadow receiveShadow />
+    </group>
+  );
 }
 
 // Camera controller component - inside Canvas
-function CameraControllerDpad({ mobileControls }) {
+function CameraControllerDpad({ mobileControls, setBoundary }) {
   const [, get] = useKeyboardControls();
 
   useFrame((state) => {
@@ -79,23 +104,13 @@ function CameraControllerDpad({ mobileControls }) {
     // Update camera position
     state.camera.position.x += direction.x * 0.1;
     state.camera.position.z += direction.z * 0.1;
+
+    // Clamp the camera's position within the showroom boundary
+    state.camera.position.x = THREE.MathUtils.clamp(state.camera.position.x, showroomBoundary.minX, showroomBoundary.maxX);
+    state.camera.position.z = THREE.MathUtils.clamp(state.camera.position.z, showroomBoundary.minZ, showroomBoundary.maxZ);
   });
 
   return null;
-}
-
-
-function ShowroomModel() {
-  const { scene } = useGLTF('models/showroom.glb')
-  const showroom = useRef()
-
-  return (
-    <group ref={showroom} 
-    >
-      <primitive object={scene} scale={0.2} castShadow receiveShadow />
-      {/* <OrbitControls enablePan={false} enableZoom={false} target={[0, 1, 0]} maxPolarAngle={Math.PI / 2} minPolarAngle={-Math.PI / 2} /> */}
-    </group>
-  )
 }
 
 
@@ -298,6 +313,13 @@ function App() {
 
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
+  const [showroomBoundary, setShowroomBoundary] = useState(null);
+
+  // Callback to set boundary in ShowroomModel
+  const setBoundary = (boundary) => {
+    setShowroomBoundary(boundary);
+  };
+
   return (
     <KeyboardControls
       map={[
@@ -323,13 +345,20 @@ function App() {
         {/* <GlobalCanvas scaleMultiplier={0.01} /> */}
         {/* <PerformanceOptimizer /> */}
         <Perf position="top-left" />
-        <CameraController />
-        <CameraControllerDpad mobileControls={mobileControls} />
+        {/* <CameraController showroomBoundary={showroomBoundary} /> */}
+        {/* <CameraControllerDpad mobileControls={mobileControls} /> */}
         <directionalLight position={[1, 10, 1]}/>
         <Environment preset="warehouse" />
         <Stats position="top-right" />
         <Suspense fallback={<Loader />}>
-          <ShowroomModel />
+          <ShowroomModel setBoundary={setBoundary} />
+          {showroomBoundary && (
+            <CameraController showroomBoundary={showroomBoundary} />
+          )}
+
+          {showroomBoundary && (
+            <CameraControllerDpad mobileControls={mobileControls} showroomBoundary={showroomBoundary} />
+          )}
 
           {/* White circular floor */}
           <ImagePlane position={[34, 7, -80]} />
