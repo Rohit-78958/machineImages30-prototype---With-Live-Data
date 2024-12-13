@@ -39,7 +39,7 @@ function LiveDataDisplay({ machineID, distanceFactor = 8, position}) {
     <Html distanceFactor={distanceFactor} position={position}>
       <div className="bg-white/90 p-4 rounded-lg shadow-lg min-w-[350px]">
         {/* Machine Name */}
-        <h2 className="text-lg font-bold text-center mb-3">
+        <h2 className="text-4xl font-bold text-center mb-3">
           {/* {machineNames[machineID] || `Machine ${machineID}`} */}
           Rohit
         </h2>
@@ -48,14 +48,14 @@ function LiveDataDisplay({ machineID, distanceFactor = 8, position}) {
         {error ? (
           <div className="text-red-500 text-sm">{error}</div>
         ) : !data ? (
-          <div className="text-gray-500 text-sm">Loading...</div>
+          <div className="text-gray-500 text-md">Loading...</div>
         ) : (
           <div className="text-sm">
-            <h3 className="font-bold mb-2 text-center">Live Machine Data</h3>
+            <h3 className="font-bold mb-2 text-center text-2xl">Live Machine Data</h3>
             <div className="space-y-1">
               {Object.entries(data).map(([key, value]) => (
                 <div key={key} className="flex justify-between">
-                  <span className="font-medium">{keys[key]}:</span>
+                  <span className="font-medium text-xl">{keys[key]}:</span>
                   <span>{value}</span>
                 </div>
               ))}

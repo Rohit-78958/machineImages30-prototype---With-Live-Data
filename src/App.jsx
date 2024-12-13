@@ -1,6 +1,6 @@
 import { Canvas, useThree } from '@react-three/fiber'
 import React, { useRef, useState, useEffect ,Suspense, useCallback } from 'react'
-import { OrbitControls, Stats, Environment, useGLTF, Html, useProgress, KeyboardControls, useKeyboardControls, PerspectiveCamera, useAnimations, PerformanceMonitor, ContactShadows, useTexture } from '@react-three/drei'
+import { OrbitControls, Stats, Environment, useGLTF, Html, useProgress, KeyboardControls, useKeyboardControls, PerspectiveCamera, useAnimations, PerformanceMonitor, ContactShadows, useTexture, useFBX } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Perf } from 'r3f-perf'
@@ -8,7 +8,7 @@ import LiveDataDisplay from './LiveData'
 
 
 // Constants for movement
-const SPEED = 5
+const SPEED = 2
 const direction = new THREE.Vector3()
 const frontVector = new THREE.Vector3()
 const sideVector = new THREE.Vector3()
@@ -20,6 +20,45 @@ function Loader() {
     {progress.toFixed(2)} % loaded
   </div>
 </Html>
+}
+
+function HumanModel() {
+  const { camera } = useThree();
+  const { scene, animations } = useGLTF('models/human.glb'); // Replace with your model path
+  const { actions } = useAnimations(animations, scene);
+  const modelRef = useRef();
+
+  useEffect(() => {
+    // Start the animation if available
+    const animationName = Object.keys(actions)[0]; // Play the first animation if names are unclear
+    if (actions[animationName]) actions[animationName].play();
+  }, [actions]);
+
+  useFrame(() => {
+    if (modelRef.current) {
+      const offsetDistance = 0.8; // Distance in front of the camera
+      const heightOffset = -0.6; // Height adjustment
+
+      // Calculate position in front of the camera
+      const direction = new THREE.Vector3();
+      camera.getWorldDirection(direction);
+
+      const cameraPosition = camera.position.clone();
+      const targetPosition = cameraPosition.add(direction.multiplyScalar(offsetDistance));
+
+      modelRef.current.position.set(
+        targetPosition.x,
+        targetPosition.y + heightOffset,
+        targetPosition.z
+      );
+
+      // Sync rotation with camera
+      modelRef.current.rotation.copy(camera.rotation); // Make model rotation same as camera
+      modelRef.current.rotation.y += Math.PI; // Rotate model 180 degrees
+    }
+  });
+
+  return <primitive ref={modelRef} object={scene} scale={0.25} />;
 }
 
 function CameraLookAround() {
@@ -66,48 +105,9 @@ function CameraLookAround() {
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [isDragging, prevMousePos, camera]);
-
-  // useEffect(() => {
-  //   const handleTouchStart = (event) => {
-  //     setIsDragging(true);
-  //     const touch = event.touches[0];
-  //     setPrevMousePos({ x: touch.clientX, y: touch.clientY });
-  //   };
   
-  //   const handleTouchMove = (event) => {
-  //     if (isDragging) {
-  //       const touch = event.touches[0];
-  //       const deltaX = touch.clientX - prevMousePos.x;
-  //       const deltaY = touch.clientY - prevMousePos.y;
-  
-  //       // Update camera rotation based on touch movement
-  //       camera.rotation.y -= deltaX * rotationSpeed; // Horizontal (left/right) rotation
-  
-  //       camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
-  
-  //       setPrevMousePos({ x: touch.clientX, y: touch.clientY });
-  //     }
-  //   };
-  
-  //   const handleTouchEnd = () => {
-  //     setIsDragging(false);
-  //   };
-  
-  //   window.addEventListener('touchstart', handleTouchStart);
-  //   window.addEventListener('touchmove', handleTouchMove);
-  //   window.addEventListener('touchend', handleTouchEnd);
-  
-  //   return () => {
-  //     window.removeEventListener('touchstart', handleTouchStart);
-  //     window.removeEventListener('touchmove', handleTouchMove);
-  //     window.removeEventListener('touchend', handleTouchEnd);
-  //   };
-  // }, [isDragging, prevMousePos, camera]);
-  
-
   return null;
 }
-
 
 function CameraController({ showroomBoundary }) {
   const [, get] = useKeyboardControls();
@@ -424,11 +424,10 @@ function App() {
           // stencil: false,
           // depth: true,
           logarithmicDepthBuffer: true,
-          
         }}
         //performance={{ min: 0.5 }}
       >
-      <PerspectiveCamera makeDefault fov={75} position={[100, 10, -8]} />
+      <PerspectiveCamera makeDefault fov={75} position={[100, 10, -8]} rotation={[0, Math.PI / 2, 0]} />
       {/* <GlobalCanvas scaleMultiplier={0.01} /> */}
         {/* <PerformanceOptimizer /> */}
         <Perf position="top-left" />
@@ -447,6 +446,8 @@ function App() {
           {showroomBoundary && (
             <CameraControllerDpad mobileControls={mobileControls} showroomBoundary={showroomBoundary} />
           )}
+
+          <HumanModel/>
 
           {/* White circular floor */}
           <ImagePlane position={[34, 7, -80]} />
