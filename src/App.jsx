@@ -31,6 +31,7 @@ function App() {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const [showroomBoundary, setShowroomBoundary] = useState(null);
+  const [isMoving, setIsMoving] = useState(false);
 
   // Callback to set boundary in ShowroomModel
   const setBoundary = (boundary) => {
@@ -71,14 +72,14 @@ function App() {
         <Suspense fallback={<Loader />}>
           <ShowroomModel setBoundary={setBoundary} />
           {showroomBoundary && (
-            <CameraController showroomBoundary={showroomBoundary} />
+            <CameraController showroomBoundary={showroomBoundary} setMovementActive={setIsMoving} />
           )}
 
           {showroomBoundary && (
             <CameraControllerDpad mobileControls={mobileControls} showroomBoundary={showroomBoundary} />
           )}
 
-          <HumanModel/>
+          <HumanModel isMoving={isMoving}/>
 
           {/* White circular floor */}
           <ImagePlane position={[34, 7, -80]} />

@@ -5,21 +5,30 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Perf } from 'r3f-perf'
 
-export default function HumanModel() {
+export default function HumanModel({isMoving}) {
   const { camera } = useThree();
-  const { scene, animations } = useGLTF('models/human.glb'); // Replace with your model path
+  const { scene, animations } = useGLTF('models/human.glb');
+
+  const idleModel = useGLTF('models/Idle.glb'); 
+  const { actions: idleActions } = useAnimations(idleModel.animations, idleModel.scene);
+
   const { actions } = useAnimations(animations, scene);
   const modelRef = useRef();
 
   useEffect(() => {
-    // Start the animation if available
-    const animationName = Object.keys(actions)[0]; // Play the first animation if names are unclear
-    if (actions[animationName]) actions[animationName].play();
-  }, [actions]);
+    if(!isMoving) {
+      const idleAnimationName = Object.keys(idleActions)[0]; 
+      if (idleActions[idleAnimationName]) idleActions[idleAnimationName].play();
+    }
+    else {
+      const animationName = Object.keys(actions)[0]; 
+      if (actions[animationName]) actions[animationName].play();
+    }
+  }, [actions, idleActions, isMoving]);
 
   useFrame(() => {
     if (modelRef.current) {
-      const offsetDistance = 0.8; // Distance in front of the camera
+      const offsetDistance = 0.9; // Distance in front of the camera
       const heightOffset = -0.6; // Height adjustment
 
       // Calculate position in front of the camera
@@ -41,5 +50,7 @@ export default function HumanModel() {
     }
   });
 
-  return <primitive ref={modelRef} object={scene} scale={0.25} />;
+  return <primitive ref={modelRef} 
+    object={isMoving ? scene : idleModel.scene}
+    scale={0.25} />;
 }

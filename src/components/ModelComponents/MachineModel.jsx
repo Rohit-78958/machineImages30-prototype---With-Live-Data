@@ -1,27 +1,16 @@
-import { Canvas, useThree } from '@react-three/fiber'
-import React, { useRef, useState, useEffect ,Suspense, useCallback } from 'react'
-import { OrbitControls, Stats, Environment, useGLTF, Html, useProgress, KeyboardControls, useKeyboardControls, PerspectiveCamera, useAnimations, PerformanceMonitor, ContactShadows, useTexture, useFBX } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
-import * as THREE from 'three'
-import { Perf } from 'r3f-perf'
+import React, { useRef, useState, useEffect , useCallback } from 'react'
+import { useGLTF, Html, useAnimations} from '@react-three/drei'
+
 
 export default function MachineModel(props) {
   const { scene, animations } = useGLTF('models/aceproject1.glb')
   const modelRef = useRef()
   const [isDragging, setIsDragging] = useState(false)
   const previousMousePositionRef = useRef({ x: 0, y: 0 })
-  const isVisible = useFrustumCulling(props.position)
-  
-  // const isVisible = useFrustumCulling(props.position)
-
-  // if (!isVisible) return null // Skip rendering if not in the frustum
-
-
 
   // Set up animations
   const group = useRef()
   const { actions } = useAnimations(animations, group)
-  const [isAnimating, setIsAnimating] = useState(false)
   const isAnimatingRef = useRef(false)
 
 

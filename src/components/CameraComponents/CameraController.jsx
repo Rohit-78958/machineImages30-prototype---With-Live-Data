@@ -1,21 +1,25 @@
 import { Canvas, useThree } from '@react-three/fiber'
 import React, { useRef, useState, useEffect ,Suspense, useCallback } from 'react'
-import { OrbitControls, Stats, Environment, useGLTF, Html, useProgress, KeyboardControls, useKeyboardControls, PerspectiveCamera, useAnimations, PerformanceMonitor, ContactShadows, useTexture, useFBX } from '@react-three/drei'
+import { OrbitControls, Stats, Environment, useGLTF, Html, useProgress, KeyboardControls, useKeyboardControls} from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Perf } from 'r3f-perf'
 
 // Constants for movement
-const SPEED = 2
+const SPEED = 1.5
 const direction = new THREE.Vector3()
 const frontVector = new THREE.Vector3()
 const sideVector = new THREE.Vector3()
 
-export default function CameraController({ showroomBoundary }) {
+export default function CameraController({ showroomBoundary, setMovementActive  }) {
     const [, get] = useKeyboardControls();
   
     useFrame((state) => {
       const { forward, backward, left, right } = get();
+      const isMoving = forward || backward || left || right;
+
+      // Notify movement state
+      setMovementActive(isMoving);
   
       // Calculate movement direction
       frontVector.set(0, 0, backward - forward);
