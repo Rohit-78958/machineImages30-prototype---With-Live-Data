@@ -6,7 +6,7 @@ import * as THREE from 'three'
 import { Perf } from 'r3f-perf'
 
 // Constants for movement
-const SPEED = 1.5
+const SPEED = 1
 const direction = new THREE.Vector3()
 const frontVector = new THREE.Vector3()
 const sideVector = new THREE.Vector3()
