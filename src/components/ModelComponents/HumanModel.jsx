@@ -52,5 +52,5 @@ export default function HumanModel({isMoving}) {
 
   return <primitive ref={modelRef} 
     object={isMoving ? scene : idleModel.scene}
-    scale={0.25} />;
+    scale={0.2} />;
 }
