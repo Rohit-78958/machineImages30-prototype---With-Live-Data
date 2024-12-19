@@ -1,13 +1,12 @@
-import { useThree, useFrame } from '@react-three/fiber'
-import React, { useRef, useState, useCallback } from 'react'
-import { useTexture} from '@react-three/drei'
-import LiveDataDisplay from './LiveData'
+import { useThree, useFrame } from '@react-three/fiber';
+import React, { useRef, useState, useCallback } from 'react';
+import { useTexture } from '@react-three/drei';
+import LiveDataDisplay from './LiveData';
 
 export default function ImagePlane({ position, machineID }) {
   const texture = useTexture('images/pngegg.png');
   const planeRef = useRef();
-  //const [isLiveDataVisible, setIsLiveDataVisible] = useState(false);
-  
+
   const { camera } = useThree();
   const [isVisible, setIsVisible] = useState(false);
 
@@ -19,33 +18,27 @@ export default function ImagePlane({ position, machineID }) {
     }
   }, [camera]);
 
-
-  // Update visibility on every frame
+  // Update visibility and lookAt logic on every frame
   useFrame(() => {
-    checkVisibility();
-  });
-
-  const handleMeshClick = (e) => {
-    e.stopPropagation();
-    setIsLiveDataVisible((prev) => !prev); // Toggle visibility
-  };
-
-  useFrame(({ camera }) => {
     if (planeRef.current) {
-      // Make the plane face the camera
-      planeRef.current.lookAt(camera.position);
+      const distance = camera.position.distanceTo(planeRef.current.position);
+      checkVisibility();
+
+      if (distance > 10) {
+        // Only make the plane face the camera when distance > 10
+        planeRef.current.lookAt(camera.position);
+      }
     }
   });
-  
 
   return (
-    <mesh ref={planeRef} position={position} rotation={[0, Math.PI / 2, 0]}
-      // onClick={handleMeshClick}
+    <mesh
+      ref={planeRef}
+      position={position}
+      rotation={[0, Math.PI / 2, 0]}
     >
       <planeGeometry args={[15, 10]} />
-      <meshBasicMaterial map={texture}
-      transparent />
-      {/* {isLiveDataVisible && <LiveDataDisplay machineID={machineID} position={[3, 4.5, 0.1]} />} */}
+      <meshBasicMaterial map={texture} transparent />
       {isVisible && <LiveDataDisplay machineID={machineID} position={[3, 4.5, 0.1]} />}
     </mesh>
   );

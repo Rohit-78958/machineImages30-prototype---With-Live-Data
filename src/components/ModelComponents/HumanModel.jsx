@@ -7,9 +7,9 @@ import { Perf } from 'r3f-perf'
 
 export default function HumanModel({isMoving}) {
   const { camera } = useThree();
-  const { scene, animations } = useGLTF('models/human.glb');
+  const { scene, animations } = useGLTF('models/Walk.glb');
 
-  const idleModel = useGLTF('models/Idle.glb'); 
+  const idleModel = useGLTF('models/Idle1.glb'); 
   const { actions: idleActions } = useAnimations(idleModel.animations, idleModel.scene);
 
   const { actions } = useAnimations(animations, scene);
@@ -28,7 +28,7 @@ export default function HumanModel({isMoving}) {
 
   useFrame(() => {
     if (modelRef.current) {
-      const offsetDistance = 0.9; // Distance in front of the camera
+      const offsetDistance = 1.2; // Distance in front of the camera
       const heightOffset = -0.6; // Height adjustment
 
       // Calculate position in front of the camera

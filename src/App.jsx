@@ -59,7 +59,7 @@ function App() {
         }}
         //performance={{ min: 0.5 }}
       >
-      <PerspectiveCamera makeDefault fov={75} position={[100, 10, -8]} rotation={[0, Math.PI / 2, 0]} />
+      <PerspectiveCamera makeDefault fov={50} position={[100, 10, -8]} rotation={[0, Math.PI / 2, 0]} />
       {/* <GlobalCanvas scaleMultiplier={0.01} /> */}
         {/* <PerformanceOptimizer /> */}
         <Perf position="top-left" />
